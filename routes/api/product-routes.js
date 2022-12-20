@@ -7,7 +7,7 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/', async (req, res) => {
   try {
     const productData = await Product.findAll({
-      include: [{ model: Category }, { model: Tag }]
+      include: [{ model: Category }, { model: Tag, through: ProductTag }]
     });
     res.status(200).json(productData);
   } catch (err) {
@@ -20,18 +20,24 @@ router.get('/:id', async (req, res) => {
   try {
     if (req.params.id) {
       const productData = await Product.findByPk(req.params.id, {
-        include: [{ model: Category }, { model: Tag }]
+        include: [{ model: Category }, { model: Tag, through: ProductTag }]
       });
-      res.status(200).json(productData);
+
+      // Check if product with provided ID was found
+      if (productData) {
+        res.status(200).json(productData);
+      } else {
+        res.status(404).json({ message: 'No product found with this ID!' });
+      }
     } else {
-      res.status(404).json({message: 'Product id not provided in req.params!'});
+      res.status(400).json({message: 'Product ID not provided!'});
     }    
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
-// create new product
+// POST Request to create new product
 router.post('/', (req, res) => {
   /* req.body should look like this...
     {
@@ -63,7 +69,7 @@ router.post('/', (req, res) => {
     });
 });
 
-// update product
+// PUT Request to update product
 router.put('/:id', (req, res) => {
   // update product data
   Product.update(req.body, {
@@ -100,7 +106,7 @@ router.put('/:id', (req, res) => {
     })
     .then((updatedProductTags) => res.json(updatedProductTags))
     .catch((err) => {
-      // console.log(err);
+      console.log(err);
       res.status(400).json(err);
     });
 });
@@ -117,10 +123,10 @@ router.delete('/:id', async (req, res) => {
       if (productData) {
         res.status(200).json(productData);
       } else {
-        res.status(404).json({message: 'No product found with this id!'});
+        res.status(404).json({message: 'No product found with this ID!'});
       }
     } else {
-      res.status(404).json({message: 'Product id not provided!'});
+      res.status(400).json({message: 'Product ID not provided!'});
     }
   } catch (err) {
     res.status(500).json(err);
