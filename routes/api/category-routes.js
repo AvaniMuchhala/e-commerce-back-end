@@ -3,9 +3,8 @@ const { Category, Product } = require('../../models');
 
 // The `/api/categories` endpoint
 
+// GET Request to find all categories and include its associated Products
 router.get('/', async (req, res) => {
-  // find all categories
-  // be sure to include its associated Products
   try {
     const categoryData = await Category.findAll({
       include: [{ model: Product}]
@@ -16,55 +15,78 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET Request to find one category by its `id` value and include its associated Products
 router.get('/:id', async (req, res) => {
-  // find one category by its `id` value
-  // be sure to include its associated Products
   try {
-    const categoryData = await Category.findByPk(req.params.id, {
-      include: [{ model: Product }]
-    });
-    res.status(200).json(categoryData);
+    // Check if category ID provided in URL
+    if (req.params.id) {
+      const categoryData = await Category.findByPk(req.params.id, {
+        include: [{ model: Product }]
+      });
+      
+      // Check if category with provided ID was found
+      if (categoryData) {
+        res.status(200).json(categoryData);
+      } else {
+        res.status(404).json({ message: 'No category found with this ID!' });
+      }
+
+    } else {
+      res.status(404).json({ message: 'Category ID not provided!' });
+    }
   } catch (err) {
     res.status(500).json(err);
-  }
-  // check if id provided, or if data found for that id 
+  } 
 });
 
+// POST Request to create a new category
 router.post('/', async (req, res) => {
-  // create a new category
   try {
+    // Check if req.body has 'category_name' property defined
     if (req.body.category_name) {
       const categoryData = await Category.create(req.body);
-      res.status(200).json(categoryData);
+      res.status(201).json(categoryData);
     } else {
-      res.status(400).json('Please supply req.body as an object with category_name property.');
+      res.status(400).json({ message: 'Please supply req.body as object with `category_name` property.'});
     }    
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
+// PUT Request to update a category by its `id` value
 router.put('/:id', async (req, res) => {
-  // update a category by its `id` value
   try {
-    const categoryData = await Category.update(req.body, {
-      where: {
-        id: req.params.id
+    // Check that ID is provided in URL and category_name is specified in req.body
+    if (req.params.id) {
+      if (req.body.category_name) {
+        const categoryData = await Category.update(req.body, {
+          where: {
+            id: req.params.id
+          }
+        });
+  
+        // Check how many rows affected by the update (0 or 1)
+        if (categoryData[0]) {
+          res.status(200).json(categoryData);
+        } else {
+          res.status(404).json({ message: 'No category found with this ID, or you already updated this category!' });
+        }
+      } else {
+        res.status(400).json({ message: 'Please supply req.body as object with `category_name` property.' });
       }
-    });
-    if (categoryData[0]) {
-      res.status(200).json(categoryData);
-      // should i change what is sent in successful response to smth more meaningful?
+      
     } else {
-      res.status(404).json({message: 'No category with this id!'});
+      res.status(400).json({ message: 'Category ID not provided!' });
     }
+    
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
+// DELETE Request to delete a category by its `id` value
 router.delete('/:id', async (req, res) => {
-  // delete a category by its `id` value
   try {
     if (req.params.id) {
       const categoryData = await Category.destroy({
@@ -72,13 +94,15 @@ router.delete('/:id', async (req, res) => {
           id: req.params.id
         }
       });
+
+      // Check how many rows affected (0 for none, 1 for 1 row deleted)
       if (categoryData) {
         res.status(200).json(categoryData);
       } else {
-        res.status(404).json({message: 'No category found with this id!'});
+        res.status(404).json({message: 'No category found with this ID!'});
       }
     } else {
-      res.status(404).json({message: 'Category id not provided!'});
+      res.status(400).json({message: 'Category ID not provided!'});
     }
   } catch (err) {
     res.status(500).json(err);
