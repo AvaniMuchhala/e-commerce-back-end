@@ -19,7 +19,12 @@ npm install
 
 ## Usage
 
-Log into MySQL shell and enter your password. Run the following to create and use the "ecommerce_db" database:
+Log into MySQL shell using the following command, and enter your password:
+```
+mysql -u root -p
+```
+
+Run the following to create and use the "ecommerce_db" database:
 ```
 SOURCE db/schema.sql
 ```
@@ -36,8 +41,8 @@ npm run start
 
 Test the different API endpoints/routes using an application like Insomnia.
 
-Here is a [walkthrough video]() demonstrating the functionality of the application (also displayed below):
-![e-commerce back end demo gif](./assets/employee-tracker-demo-gif.gif)
+Here is a [walkthrough video](https://drive.google.com/file/d/1_kkBIU_BVab26YfBj9il4X8pAQBzU41S/view?usp=sharing) demonstrating the functionality of the application. A screenshot demonstrating how to test a route in Insomnia and receive a response is displayed below:
+![e-commerce back end demo gif](./assets/e-commerce-back-end-screenshot.png)
 
 ## License
 
